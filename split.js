@@ -8,8 +8,15 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('gennew').addEventListener('click', () => {
         var val = gen()
         document.getElementById('gen').value = val[0]
-        clipboard.writeText(val[0])
         document.getElementById('time').textContent = 'It\'d take a computer around ' + val[1].time + ' to crack this password. You\'re all set.'
+    })
+
+    document.getElementById('gencopy').addEventListener('click', () => {
+        clipboard.writeText(document.getElementById('gen').value)
+
+        new window.Notification('PPG copied to clipboard!', {
+            body: 'Your new password was copied to your clipboard.'
+        })
     })
 })
 

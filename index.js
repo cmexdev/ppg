@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, clipboard } = require('electron')
+const { app, BrowserWindow, Tray, Menu, clipboard, shell, Notification } = require('electron')
 const fs = require('fs')
 const path = require('path')
 
@@ -36,11 +36,13 @@ function createWindow() {
                     }
                 },
                 {
+                    type: 'separator'
+                },
+                {
                     label: 'Quit PPG',
                     type: 'normal',
-                    role: 'quit',
                     click() {
-                        app.quit()
+                        app.exit()
                     }
                 }
             ]
@@ -67,6 +69,9 @@ function createWindow() {
                     }
                 },
                 {
+                    type: 'separator'
+                },
+                {
                     label: 'New window',
                     type: 'normal',
                     click() {
@@ -81,7 +86,9 @@ function createWindow() {
             type: 'submenu',
             submenu: [
                 {
-                    label: 'GitHub'
+                    label: 'GitHub', click() {
+                        shell.openExternal('https://github.com/cmexdev/ppg')
+                    }
                 }
             ]
         }
@@ -131,8 +138,12 @@ app.on('ready', () => {
         {
             label: 'Password', type: 'submenu', submenu: [
                 {
-                    label: 'New', type: 'normal', click() {
+                    label: 'Generate new and copy', type: 'normal', click() {
                         clipboard.writeText(genPassword())
+                        new Notification({
+                            title: 'PPG copied to clipboard!',
+                            body: 'Your new password was copied to your clipboard.',
+                        }).show()
                     }
                 }
             ]
