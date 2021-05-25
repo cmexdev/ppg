@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Tray, Menu, clipboard, shell, Notification } = require('electron')
+const { app, BrowserWindow, Tray, Menu, clipboard, shell, Notification, NativeImage } = require('electron')
 const fs = require('fs')
 const path = require('path')
+const gen = require('./generatePassword')
 
 let tray = null
 let win = null
@@ -11,7 +12,7 @@ function createWindow() {
         height: 540,
         webPreferences: {
             nodeIntegration: true,
-            preload: path.join(__dirname, 'split.js')
+            preload: path.join(__dirname, 'preload.js')
         },
         maximizable: false,
         maxHeight: 540,
@@ -19,7 +20,7 @@ function createWindow() {
         minHeight: 540,
         minWidth: 810,
     })
-    win.setIcon('icon@2x.png')
+    win.setIcon(path.join(__dirname, 'icon@2x.png'))
 
     var winMenu = Menu.buildFromTemplate([
         {
@@ -43,7 +44,8 @@ function createWindow() {
                     type: 'normal',
                     click() {
                         app.exit()
-                    }
+                    },
+                    accelerator: 'CmdOrCtrl+Q'
                 }
             ]
         },
@@ -121,7 +123,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('ready', () => {
-    tray = new Tray('icon@2x.png')
+    tray = new Tray(path.join(__dirname, 'icon@2x.png'))
     const trayMenu = Menu.buildFromTemplate([
         {
             label: 'Powerful Password Generator', enabled: false
@@ -139,7 +141,7 @@ app.on('ready', () => {
             label: 'Password', type: 'submenu', submenu: [
                 {
                     label: 'Generate new and copy', type: 'normal', click() {
-                        clipboard.writeText(genPassword())
+                        clipboard.writeText(gen.gen())
                         new Notification({
                             title: 'PPG copied to clipboard!',
                             body: 'Your new password was copied to your clipboard.',
@@ -158,52 +160,3 @@ app.on('ready', () => {
     tray.setToolTip('PPG')
     tray.setContextMenu(trayMenu)
 })
-
-function genPassword() {
-    const data = fs.readFileSync('alpha.txt')
-    const split = data.toString().split('\n')
-    const join = split.join('')
-    const words = join.split('\r')
-
-    var threeLetters = []
-
-    words.forEach(el => {
-        if (el.length === 3) {
-            threeLetters.push(el)
-        }
-    })
-
-    let rn = Math.floor(Math.random() * threeLetters.length)
-    var threeRandomWord = threeLetters[rn][0].toUpperCase() + threeLetters[rn].substring(1)
-
-    let zeroThroughNine = Math.floor(Math.random() * 9)
-
-    var fiveLetters = []
-
-    words.forEach(el => {
-        if (el.length === 5) {
-            fiveLetters.push(el)
-        }
-    })
-
-    let rnForFive = Math.floor(Math.random() * fiveLetters.length)
-    var fiveRandomWord = fiveLetters[rnForFive][0].toUpperCase() + fiveLetters[rn].substring(1)
-
-    const punc = [',', '.', '/', '?', ';', ':']
-    let rnForPunc = Math.floor(Math.random() * punc.length)
-    var randomPunc = punc[rnForPunc]
-
-    var fourLetters = []
-
-    words.forEach(el => {
-        if (el.length === 4) {
-            fourLetters.push(el)
-        }
-    })
-
-    let rnForFour = Math.floor(Math.random() * fourLetters.length)
-    var fourRandomWord = fourLetters[rnForFour][0].toUpperCase() + fourLetters[rn].substring(1)
-
-    const password = threeRandomWord + zeroThroughNine + fiveRandomWord + randomPunc + fourRandomWord
-    return password
-}
