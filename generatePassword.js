@@ -13,9 +13,6 @@ const dictionary = JSON.parse(decoded)
 const wordsRaw = fs.readFileSync('words.txt')
 const words = wordsRaw.toString().split('\n')
 
-let password = gen()
-//console.log(password)
-
 //Return definition of argument
 function define(word) {
     return dictionary[word.toString().toUpperCase()]
@@ -27,6 +24,7 @@ function getWordOfLength(num) {
     let wordsOfLength = []
     words.forEach(word => {
         if (word.length === num) {
+            //Remove words with 's
             if (word.indexOf('\'s') === -1) {
                 wordsOfLength.push(word)
             }
@@ -56,6 +54,10 @@ function isUpperCase(word) {
 function gen() {
     let characters = [',', '.', '/', '?', ';', ':', '-', '=', '+', '!']
     let three = capIt(getRandomFromArray(getWordOfLength(3)))
+    //For each word in the password, check to see if it's all uppercase.
+    //  If so, start over.
+    //Then check to see if it has a definition or is an actual word.
+    //  If not, start over.
     if (isUpperCase(three) !== true) {
         if (define(three) !== undefined) {
             let randomNumber = Math.floor(Math.random() * 10)
@@ -68,6 +70,11 @@ function gen() {
                         if (define(four) !== undefined) {
                             let finalRandomNumber = Math.floor(Math.random() * 10)
                             let final = three + randomNumber + five + character + four + finalRandomNumber
+                            //Test password according to HSIMP
+                            //  If it has a level value, start over
+                            //  Generally, the level value should only have a value when it's a bad password.
+                            //Maybe add a system that checks the password against the top 10,000 passwords.
+                            //  If it does find a match, start over.
                             let hsimpTest = hsimp(final)
                             if (hsimpTest.level === null) {
                                 return final
@@ -94,4 +101,5 @@ function gen() {
     }
 }
 
+//Export module
 exports.gen = gen
